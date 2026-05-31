@@ -75,7 +75,9 @@ hl.define_submap("global", function()
   hl.bind("CTRL + SUPER + T", hl.dsp.global("quickshell:wallpaperSelectorToggle"), { desc = "Toggle wallpaper selector" })
   hl.bind("CTRL + SUPER + ALT + T", hl.dsp.global("quickshell:wallpaperSelectorRandom"), { desc = "Select random wallpaper" })
   hl.bind("CTRL + SUPER + T", hl.dsp.exec_cmd(qsc("ipc call TEST_ALIVE || ~/.config/quickshell/" .. qsConfig .. "/scripts/colors/switchwall.sh"))) -- [hidden]
-  hl.bind("CTRL + SUPER + R", hl.dsp.exec_cmd("killall ydotool qs quickshell; qs -c " .. qsConfig .. " &"), { desc = "Restart widgets" })
+  -- Re-source /etc/set-environment so the restarted qs inherits the correct
+  -- XDG_DATA_DIRS (Papirus icons) even if Hyprland's env was broken earlier.
+  hl.bind("CTRL + SUPER + R", hl.dsp.exec_cmd("pkill ydotool; qs kill -c " .. qsConfig .. "; bash -c 'source /etc/set-environment 2>/dev/null; qs -c " .. qsConfig .. " &'"), { desc = "Restart widgets" })
   hl.bind("CTRL + SUPER + P", hl.dsp.global("quickshell:panelFamilyCycle"), { desc = "Cycle panel family" })
 
   --! Utilities
