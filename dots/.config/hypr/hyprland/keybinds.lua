@@ -42,8 +42,11 @@ hl.define_submap("global", function()
   hl.bind("SUPER + mouse_up", hl.dsp.global("quickshell:searchToggleReleaseInterrupt")) -- [hidden]
   hl.bind("SUPER + mouse_down", hl.dsp.global("quickshell:searchToggleReleaseInterrupt")) -- [hidden]
 
+  -- bindit equivalent: separate press + release binds so GlobalStates.superDown resets correctly
   hl.bind("Super_L", hl.dsp.global("quickshell:workspaceNumber"), { ignore_mods = true, transparent = true }) -- [hidden]
   hl.bind("Super_R", hl.dsp.global("quickshell:workspaceNumber"), { ignore_mods = true, transparent = true }) -- [hidden]
+  hl.bind("Super_L", hl.dsp.global("quickshell:workspaceNumber"), { ignore_mods = true, transparent = true, release = true }) -- [hidden]
+  hl.bind("Super_R", hl.dsp.global("quickshell:workspaceNumber"), { ignore_mods = true, transparent = true, release = true }) -- [hidden]
   hl.bind("SUPER + Tab", hl.dsp.global("quickshell:overviewWorkspacesToggle"), { desc = "Toggle overview" })
   hl.bind("SUPER + V", hl.dsp.global("quickshell:overviewClipboardToggle"), { desc = "Clipboard history >> clipboard" })
   hl.bind("SUPER + Period", hl.dsp.global("quickshell:overviewEmojiToggle"), { desc = "Emoji >> clipboard" })
