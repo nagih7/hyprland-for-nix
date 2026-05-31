@@ -19,16 +19,20 @@ LockScreen {
         interval: 150
         repeat: false
         onTriggered: {
-            var batch = ""
+            // Hyprland 0.55 Lua mode: --batch dispatch doesn't work; use eval
+            // to run multiple dispatches atomically in a single Lua expression.
+            var evalCmd = ""
             for (var j = 0; j < Quickshell.screens.length; ++j) {
                 var monName = Quickshell.screens[j].name
                 var wsId = root.savedWorkspaces[monName]
                 if (wsId !== undefined) {
-                    batch += "dispatch focusmonitor " + monName + "; dispatch workspace " + wsId + "; "
+                    evalCmd += "hl.dispatch(hl.dsp.focus({monitor='" + monName + "'})); "
+                    evalCmd += "hl.dispatch(hl.dsp.focus({workspace='" + wsId + "'})); "
                 }
             }
-            if (batch.length > 0) {
-                Quickshell.execDetached(["hyprctl", "--batch", batch + "reload"])
+            if (evalCmd.length > 0) {
+                Quickshell.execDetached(["hyprctl", "eval", evalCmd])
+                Quickshell.execDetached(["hyprctl", "reload"])
             }
         }
     }
@@ -44,7 +48,8 @@ LockScreen {
             if (GlobalStates.screenLocked) {
                 // Lock: save workspace per monitor and move all to temp workspace in one batch
                 var next = {}
-                var batch = "keyword animation workspaces,1,7,menu_decel,slidevert; "
+                // Lua mode: set lock animation then dispatch all monitors/workspaces atomically
+                var evalCmd = "hl.animation({leaf='workspaces', enabled=true, speed=1, bezier='menu_decel', style='slidevert'}); "
                 for (var i = 0; i < Quickshell.screens.length; ++i) {
                     var mon = Quickshell.screens[i].name
                     var mData = HyprlandData.monitors.find(m => m.name === mon)
@@ -53,10 +58,12 @@ LockScreen {
                     }
                     var ws = (mData?.activeWorkspace?.id ?? 1)
                     next[mon] = ws
-                    batch += "dispatch focusmonitor " + mon + "; dispatch workspace " + (2147483647 - ws) + "; "
+                    evalCmd += "hl.dispatch(hl.dsp.focus({monitor='" + mon + "'})); "
+                    evalCmd += "hl.dispatch(hl.dsp.focus({workspace='" + (2147483647 - ws) + "'})); "
                 }
                 root.savedWorkspaces = next
-                Quickshell.execDetached(["hyprctl", "--batch", batch + "reload"])
+                Quickshell.execDetached(["hyprctl", "eval", evalCmd])
+                Quickshell.execDetached(["hyprctl", "reload"])
             } else {
                 restoreTimer.start()
             }
