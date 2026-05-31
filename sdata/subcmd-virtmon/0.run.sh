@@ -59,7 +59,10 @@ echo "Creating tester monitor..."
 x hyprctl output create headless ${vmon_tester}
 
 echo "Setting properties of tester monitor..."
-x hyprctl keyword monitor ${vmon_tester},${VMON_RESOLUTION}@${VMON_FPS},${VMON_POSITION},${VMON_SCALE}${VMON_EXTRA}
+# Hyprland 0.55 Lua mode: `hyprctl keyword` is not supported.
+# hl.monitor() takes position as "x y" (space-sep); convert from "x,y" if needed.
+_vmon_pos="${VMON_POSITION//,/ }"
+x hyprctl eval "hl.monitor({output='${vmon_tester}', mode='${VMON_RESOLUTION}@${VMON_FPS}', position='${_vmon_pos}', scale=${VMON_SCALE}})"
 
 e="%s${STY_RST}\n"
 printf "${STY_YELLOW}=========================================$e"
