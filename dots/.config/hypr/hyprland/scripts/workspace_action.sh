@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+
 curr_workspace="$(hyprctl activeworkspace -j | jq -r ".id")"
 dispatcher="$1"
+
 shift ## The target is now in $1, not $2
 
 if [[ -z "${dispatcher}" || "${dispatcher}" == "--help" || "${dispatcher}" == "-h" || -z "$1" ]]; then
@@ -17,18 +19,19 @@ else
 fi
 
 # Hyprland 0.55+ Lua mode: `hyprctl dispatch foo bar` is parsed as Lua
-# `hl.dispatch(foo bar)` which is a syntax error. Use Lua dispatcher expressions.
+# `hl.dispatch(foo bar)`, and third-party tools that issue the old hyprlang
+# dispatch strings over the IPC socket (e.g. hyprsome) hit the same parser
+# and fail silently (exit 0, no-op). Call the Lua dispatchers directly
+# instead — verified against a live 0.55.2 instance.
 case "$dispatcher" in
   workspace)
-    hyprctl dispatch "hl.dsp.focus({workspace='${target}'})"
+    hyprctl dispatch "hl.dsp.focus({ workspace = \"${target}\" })"
     ;;
-  movetoworkspace)
-    hyprctl dispatch "hl.dsp.window.move({workspace='${target}'})"
-    ;;
-  movetoworkspacesilent)
-    hyprctl dispatch "hl.dsp.window.move({workspace='silent:${target}'})"
+  movetoworkspace | movetoworkspacesilent)
+    hyprctl dispatch "hl.dsp.window.move({ workspace = \"${target}\" })"
     ;;
   *)
-    hyprctl dispatch "${dispatcher}" "${target}"
+    echo "Invalid dispatcher"
+    exit 1
     ;;
 esac
